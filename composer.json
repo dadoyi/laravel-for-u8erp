@@ -1,5 +1,5 @@
 {
-    "name": "erp/connect",
+    "name": "dadoyi/erp-connect",
     "description": "for work faster",
     "require": {
         "hanson/foundation-sdk": "^2.0"
