@@ -2,7 +2,7 @@
     "name": "erp/connect",
     "description": "for work faster",
     "require": {
-        "guzzlehttp/guzzle": "~6.0"
+        "hanson/foundation-sdk": "^2.0"
     },
     "authors": [
         {
