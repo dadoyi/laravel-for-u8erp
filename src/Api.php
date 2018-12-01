@@ -35,7 +35,7 @@ class Api extends AbstractAPI
      */
     const URL = 'https://api.yonyouup.com';
 
-    public function __construct(Repository $repository)
+    protected function __construct(Repository $repository)
     {
         $this->config = $repository;
         $this->checkHttp();
@@ -116,6 +116,7 @@ class Api extends AbstractAPI
 
 
     /**
+     * 请求token参数
      * @return array
      */
     private function tokenData()
