@@ -10,51 +10,25 @@ use Illuminate\Config\Repository;
  * @package ErpConnect\Params
  */
 
-class PlatformClass
+trait PlatformClass
 {
-    static private $_instance = null;
+    protected $param;
 
-    private $config;
+    protected $arr;
 
-    protected $form_account;
+//        return  [
 
-    protected $app_key;
+//        ];
 
-    protected $app_secret;
-
-    private function __construct(Repository $repository,$key)
+    public function getParamMerge($arr)
     {
-        $this->config = $repository;
-    }
-
-    static public function getInstance($key)
-    {
-        if(!(self::$_instance instanceof PlatformClass)){
-            self::$_instance = new self($key);
+        foreach ($arr as $k => $item){
+            if(array_key_exists($item,$this->config())){
+                $arr[$item] = $this->config()[$item];
+            }
         }
-        return self::$_instance;
-    }
 
-
-    private function getkey()
-    {
-
-    }
-
-    public function getArr($key)
-    {
-
-    }
-
-
-
-    public function tokenGet()
-    {
-        return [
-            'from_account' => $this->form_account,
-            'app_key' => $this->app_key,
-            'app_secret' => $this->app_secret,
-        ];
+        return $arr;
     }
 
 

@@ -3,30 +3,46 @@
 namespace ErpConnect;
 
 
+use ErpConnect\Params\PlatformClass;
 use Illuminate\Support\Facades\Cache;
 
 class ErpConnect extends Api
 {
-    protected function __construct(\Illuminate\Config\Repository $repository)
+//    use PlatformClass;
+
+    public function __construct(\Illuminate\Config\Repository $repository)
     {
         parent::__construct($repository);
     }
 
-    public function getTranSactionNum()
+    /**
+     * 获取交易号
+     * @return mixed
+     */
+    public function getTranSactionNum($param)
     {
-        $response->get('erpconnect.FROM_ACCOUNT')
+       return $this->get('tradeid/get',$param);
     }
 
-    public function getOrderStatus()
+    /**
+     * 订单状态
+     */
+    public function getOrderStatus($param)
     {
-
+        return $this->get('api/orderstatus/get',$param);
     }
 
+    /**
+     * 获取数据源配置
+     */
     public function getDataOne()
     {
 
     }
 
+    /**
+     * 批量获取数据源配置
+     */
     public function getDataBetween()
     {
 
