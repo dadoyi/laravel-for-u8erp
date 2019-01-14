@@ -1,9 +1,11 @@
 <?php
 namespace ErpConnect;
 
+use GuzzleHttp\Client;
 use Hanson\Foundation\AbstractAPI;
 use Illuminate\Config\Repository;
 use Illuminate\Support\Facades\Cache;
+use phpDocumentor\Reflection\Types\Self_;
 
 class Api extends AbstractAPI
 {
@@ -45,7 +47,9 @@ class Api extends AbstractAPI
     {
         $this->config = $repository;
         $this->checkHttp();
-        if(!Cache::get($this->gettokenkey())){
+        if(Cache::get($this->gettokenkey())){
+            $this->token = Cache::get($this->gettokenkey());
+        }else{
             $this->getToken();
         }
     }
@@ -60,6 +64,7 @@ class Api extends AbstractAPI
         $response = $http->get(self::URL.'system/token',$this->data);
 
         $result = json_decode(strval($response->getBody()), true);
+        \Log::info('url:'.self::URL.'system/token,result:'.json_encode($result));
         $this->setToken($result['token']['id']);
     }
 
@@ -81,6 +86,7 @@ class Api extends AbstractAPI
     public function getTokenkey()
     {
         if(is_null($this->tokenkey)){
+            $this->tokenData();
             return $this->data['from_account'];
         }
         return $this->tokenkey;
@@ -97,9 +103,8 @@ class Api extends AbstractAPI
         $params = array_merge($this->paramMerge($params),[
             'token'=>$this->token
         ]);
-
         $response = $this->http->get(self::URL.$method, $params);
-        return $this->response($response);
+        return $this->response($response,self::URL.$method);
 
     }
 
@@ -108,7 +113,7 @@ class Api extends AbstractAPI
      * @param array $params
      * @return mixed
      */
-    protected function post(string $method , array $params)
+    protected function post(string $method , array $params,$json = null)
     {
         $params = array_merge($this->paramMerge($params),[
             'token'=>$this->token
@@ -116,7 +121,7 @@ class Api extends AbstractAPI
 
         $response = $this->http->post(self::URL.$method, $params);
 
-        return $this->response($response);
+        return $this->response($response,self::URL.$method);
     }
 
 
@@ -137,15 +142,11 @@ class Api extends AbstractAPI
     /**
      * @return mixed
      */
-    public function response($response)
+    public function response($response,$url = null)
     {
-        $msg = json_decode($response->getBody());
-        if(($msg->errcode) > 0){
-            return $data = [
-                'code'=>$msg->errcode,
-                'msg'=>$msg->errmsg];
-        }
-        return json_encode($msg);
+        $msg = json_decode($response->getBody(),true);
+        \Log::info('url:'.$url.',result:'.json_encode($msg));
+        return $msg;
     }
 
 
@@ -182,11 +183,41 @@ class Api extends AbstractAPI
     protected function paramMerge($param)
     {
         foreach ($param as $key => $item) {
-            if(array_key_exists($item,$this->getConfigData())){
-                $param[$item] = $this->getConfigData()[$item];
-                unset($param[$key]);
+            if(!is_array($item)){
+                if(array_key_exists($item,$this->getConfigData())){
+                    $param[$item] = $this->getConfigData()[$item];
+                    unset($param[$key]);
+                }
             }
         }
         return $param;
     }
+
+
+    public function requestMethod($url,$option = [],$method,$params = [])
+    {
+        if(!empty($option)){
+            $option = $this->paramMerge($option);
+            $option['token'] = $this->token;
+        }
+
+        if ($option) {
+            $option['ds_sequence']=1;
+            $queryString = '?';
+            foreach ($option as $key => $value) {
+                $queryString .= $key . '=' . $value . '&';
+            }
+            $url = self::URL.$url . rtrim($queryString, '&');
+        }
+        
+        $config['headers'] = [
+            'Content-Type'=>'application/json'
+        ];
+        $client = new Client($config);
+        $request = $client->request(strtoupper($method),$url,$params);
+        return $this->response($request,$url);
+    }
+
+
+
 }
