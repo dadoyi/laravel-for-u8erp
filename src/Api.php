@@ -145,7 +145,7 @@ class Api extends AbstractAPI
     public function response($response,$url = null)
     {
         $msg = json_decode($response->getBody(),true);
-        \Log::info('url:'.$url.',result:'.json_encode($msg));
+//        \Log::info('url:'.$url.',result:'.json_encode($msg));
         return $msg;
     }
 
@@ -199,9 +199,6 @@ class Api extends AbstractAPI
         if(!empty($option)){
             $option = $this->paramMerge($option);
             $option['token'] = $this->token;
-        }
-
-        if ($option) {
             $option['ds_sequence']=1;
             $queryString = '?';
             foreach ($option as $key => $value) {
@@ -209,10 +206,11 @@ class Api extends AbstractAPI
             }
             $url = self::URL.$url . rtrim($queryString, '&');
         }
-        
+
         $config['headers'] = [
             'Content-Type'=>'application/json'
         ];
+
         $client = new Client($config);
         $request = $client->request(strtoupper($method),$url,$params);
         return $this->response($request,$url);
